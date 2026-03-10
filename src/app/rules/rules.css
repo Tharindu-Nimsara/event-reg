@@ -1,0 +1,85 @@
+/* Rules Page Styles */
+
+.rules-page {
+  font-family: var(--font-body), monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rule-card {
+  cursor: pointer;
+  position: relative;
+}
+
+.rule-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    #16a34a,
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.rule-card:hover::before {
+  opacity: 1;
+}
+
+.rule-card:hover {
+  border-color: rgba(22, 163, 74, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(22, 163, 74, 0.1);
+  background: linear-gradient(
+    135deg,
+    rgba(22, 163, 74, 0.05),
+    rgba(15, 15, 15, 0.95)
+  );
+}
+
+.rule-number {
+  font-weight: 900;
+  line-height: 1;
+}
+
+.rule-details {
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.solid-btn {
+  display: inline-block;
+  padding: 0.6rem 1.4rem;
+  border: 1px solid #16a34a;
+  background: #16a34a;
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  border-radius: 2px;
+}
+
+.solid-btn:hover {
+  background: transparent;
+  color: #16a34a;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.2);
+}
+
+@media (max-width: 768px) {
+  .rule-card {
+    font-size: 0.9rem;
+  }
+  
+  .rule-number {
+    font-size: 1.2rem;
+  }
+}

@@ -1,58 +1,60 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import "./page.css";
+import Link from "next/link";
 
 const timelineItems = [
   {
     date: "15TH FEBRUARY",
     title: "REGISTRATIONS OPEN",
-    desc: "TEAM APPLICATIONS, IDEA BRIEFS, AND ELIGIBILITY VERIFICATION BEGINS.",
+    desc: "TEAM SIGN-UPS, CONCEPT SUBMISSIONS, AND PARTICIPANT QUALIFICATION COMMENCE.",
   },
   {
     date: "4TH MARCH - 15TH MARCH",
     title: "ENVISION PHASE",
-    desc: "TEAMS SUBMIT PROBLEM ANALYSIS, USER VALIDATION, AND EARLY SOLUTION BLUEPRINTS.",
+    desc: "PARTICIPANTS PRESENT CHALLENGE ASSESSMENTS, TARGET AUDIENCE RESEARCH, AND INITIAL DESIGN CONCEPTS.",
   },
   {
     date: "20TH MARCH - 20TH MAY",
     title: "EXECUTION PHASE",
-    desc: "MENTORING, ITERATIVE PROTOTYPE BUILDS, AND TRACK-WISE PROGRESS REVIEWS.",
+    desc: "GUIDED SUPPORT, CONTINUOUS PROTOTYPE DEVELOPMENT, AND CATEGORY-SPECIFIC MILESTONE EVALUATIONS.",
   },
   {
     date: "5TH JUNE",
     title: "GRAND FINALE",
-    desc: "LIVE DEMO DAY, FINAL PITCHES, AND AWARDS IN FRONT OF INDUSTRY PANELISTS.",
+    desc: "IN-PERSON DEMONSTRATIONS, CLOSING PRESENTATIONS, AND RECOGNITION CEREMONY BEFORE EXPERT JUDGES.",
   },
 ];
 
 const faqs = [
   {
     q: "WHAT IS HACKATHONX?",
-    a: "HACKATHONX IS A TECH STARTUP COMPETITION FOR STUDENT TEAMS TO BUILD, VALIDATE, AND PITCH INNOVATIVE PRODUCTS.",
+    a: "HACKATHONX IS A TECHNOLOGY ENTREPRENEURSHIP CHALLENGE WHERE STUDENT GROUPS DEVELOP, TEST, AND PRESENT GROUNDBREAKING SOLUTIONS.",
   },
   {
     q: "WHO CAN PARTICIPATE?",
-    a: "UNDERGRADUATE STUDENTS FROM RECOGNIZED UNIVERSITIES CAN APPLY IN TEAMS OF 2 TO 5 MEMBERS.",
+    a: "UNIVERSITY UNDERGRADUATES FROM ACCREDITED INSTITUTIONS MAY JOIN IN GROUPS RANGING FROM 2 TO 5 PARTICIPANTS.",
   },
   {
     q: "WHAT ARE THE COMPETITION TRACKS?",
-    a: "TRACKS INCLUDE PLATFORMS, INTELLIGENCE, AND HARDWARE & SECURITY WITH DOMAIN-SPECIFIC CHALLENGES.",
+    a: "CATEGORIES CONSIST OF PLATFORMS, INTELLIGENCE, AND HARDWARE & SECURITY, EACH WITH SPECIALIZED PROBLEM STATEMENTS.",
   },
   {
     q: "HOW DOES THE COMPETITION PROGRESS?",
-    a: "IT RUNS THROUGH REGISTRATION, ENVISION, EXECUTION, AND A LIVE GRAND FINALE WITH JURY EVALUATION.",
+    a: "THE EVENT PROCEEDS THROUGH SIGN-UP, PLANNING, BUILDING, AND CULMINATES IN A LIVE FINALE WITH PANEL JUDGING.",
   },
   {
     q: "WHEN DO REGISTRATIONS OPEN?",
-    a: "REGISTRATIONS OPEN ON 15TH FEBRUARY THROUGH THE OFFICIAL COMPETITION PORTAL.",
+    a: "SIGN-UPS BEGIN ON FEBRUARY 15TH VIA THE OFFICIAL COMPETITION WEBSITE.",
   },
   {
     q: "IS THERE A REGISTRATION FEE?",
-    a: "NO. PARTICIPATION IS FREE FOR ELIGIBLE STUDENT TEAMS.",
+    a: "NO. ENTRY IS COMPLETELY FREE FOR QUALIFYING STUDENT GROUPS.",
   },
   {
     q: "WHAT DO WINNERS RECEIVE?",
-    a: "WINNERS RECEIVE CASH PRIZES, INDUSTRY MENTORSHIP, MEDIA EXPOSURE, AND POSSIBLE INCUBATION PATHWAYS.",
+    a: "VICTORS ARE AWARDED MONETARY PRIZES, PROFESSIONAL GUIDANCE, PUBLIC RECOGNITION, AND POTENTIAL STARTUP ACCELERATION OPPORTUNITIES.",
   },
 ];
 
@@ -95,14 +97,24 @@ const gallery = [
   "https://picsum.photos/700/500?5,event",
 ];
 
+const stats = [
+  { value: 1000000, label: "PRIZEPOOL", suffix: "+", prefix: "" },
+  { value: 26, label: "UNIVERSITIES", suffix: "+", prefix: "" },
+  { value: 550, label: "TEAMS", suffix: "+", prefix: "" },
+  { value: 2400, label: "DELEGATES", suffix: "+", prefix: "" },
+];
+
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeFaq, setActiveFaq] = useState(-1);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [counters, setCounters] = useState(stats.map(() => 0));
+  const [hasAnimated, setHasAnimated] = useState(false);
 
   const heroRef = useRef(null);
   const galleryRef = useRef(null);
+  const statsRef = useRef(null);
   const dragRef = useRef({ isDown: false, startX: 0, startLeft: 0 });
 
   const sectionClass =
@@ -138,6 +150,48 @@ export default function Home() {
     observed.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!statsRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasAnimated) {
+            setHasAnimated(true);
+            stats.forEach((stat, index) => {
+              const duration = 2000;
+              const steps = 60;
+              const increment = stat.value / steps;
+              let current = 0;
+
+              const timer = setInterval(() => {
+                current += increment;
+                if (current >= stat.value) {
+                  setCounters((prev) => {
+                    const newCounters = [...prev];
+                    newCounters[index] = stat.value;
+                    return newCounters;
+                  });
+                  clearInterval(timer);
+                } else {
+                  setCounters((prev) => {
+                    const newCounters = [...prev];
+                    newCounters[index] = Math.floor(current);
+                    return newCounters;
+                  });
+                }
+              }, duration / steps);
+            });
+          }
+        });
+      },
+      { threshold: 0.3 },
+    );
+
+    observer.observe(statsRef.current);
+    return () => observer.disconnect();
+  }, [hasAnimated]);
 
   const updateSlide = useMemo(
     () => () => {
@@ -206,11 +260,11 @@ export default function Home() {
         </div>
       </div>
 
-      <header className="fixed inset-x-0 top-0 z-50 px-4 py-4 md:px-8">
-        <nav className="grid grid-cols-[auto_auto] items-center justify-between gap-4 md:grid-cols-[auto_1fr_auto]">
+      <header className="fixed inset-x-0 top-0 z-50 px-3 py-3 md:px-8 md:py-4">
+        <nav className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-md border border-white/10 bg-black/45 px-3 py-2 backdrop-blur-sm md:grid-cols-[auto_1fr_auto] md:gap-4 md:px-4">
           <a
             href="#top"
-            className="font-[var(--font-display)] text-2xl tracking-[0.09em]"
+            className="font-[var(--font-display)] text-[1.45rem] tracking-[0.09em] md:text-2xl"
           >
             HACKATHON<span className="text-[#16A34A]">X</span>
           </a>
@@ -225,11 +279,13 @@ export default function Home() {
           </button>
 
           <div
-            className={`col-span-2 items-center justify-center gap-2 text-[0.66rem] font-medium tracking-[0.18em] md:col-span-1 md:flex ${
-              mobileOpen ? "flex flex-wrap pt-2" : "hidden"
+            className={`col-span-2 items-center justify-center gap-2 text-[0.62rem] font-medium tracking-[0.16em] md:col-span-1 md:flex md:text-[0.66rem] md:tracking-[0.18em] ${
+              mobileOpen
+                ? "flex flex-wrap justify-start border-t border-white/10 pt-3 md:border-t-0 md:pt-0"
+                : "hidden"
             }`}
           >
-            <a href="#about">RULES</a>
+            <a href="/rules">RULES</a>
             <span className="text-white/35">.</span>
             <a href="#timeline">TIMELINE</a>
             <span className="text-white/35">.</span>
@@ -240,18 +296,20 @@ export default function Home() {
 
           <div
             className={`col-span-2 items-center gap-2 md:col-span-1 md:flex ${
-              mobileOpen ? "flex pt-2" : "hidden"
+              mobileOpen
+                ? "flex flex-wrap border-t border-white/10 pt-3 md:border-t-0 md:pt-0"
+                : "hidden"
             }`}
           >
             <a
-              href="#legacy"
-              className="border border-white/10 px-4 py-2 text-[0.64rem] tracking-[0.12em]"
+              href="/delegate-book"
+              className="action-btn border border-white/10 px-4 py-2 text-[0.62rem] tracking-[0.12em] md:text-[0.64rem]"
             >
               DELEGATE BOOKLET
             </a>
             <a
               href="#contact"
-              className="bg-[#16A34A] px-4 py-2 text-[0.64rem] font-bold tracking-[0.12em] transition hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(22,163,74,0.4)]"
+              className="action-btn bg-[#16A34A] px-4 py-2 text-[0.62rem] font-bold tracking-[0.12em] md:text-[0.64rem]"
             >
               REGISTER NOW
             </a>
@@ -262,7 +320,7 @@ export default function Home() {
       <section
         id="top"
         ref={heroRef}
-        className="relative flex min-h-screen items-end px-4 pb-16 pt-28 md:px-12 md:pb-20"
+        className="home-hero relative flex min-h-screen items-end px-4 pb-16 pt-28 md:px-12 md:pb-20"
         style={{
           backgroundImage:
             "linear-gradient(rgba(0,0,0,0.64), rgba(0,0,0,0.78)), url('hero-bg.jpg'), url('https://picsum.photos/1920/1080?grayscale&blur=1')",
@@ -276,27 +334,140 @@ export default function Home() {
             • HACKATHONX - 2026
           </div>
           <h1 className="m-0 leading-[0.92]">
-            <span className="hero-line block font-[var(--font-display)] text-[clamp(3.2rem,12vw,9rem)]">
-              TRANSFORM
+            <span className="hero-line block font-[var(--font-display)] text-[clamp(2.4rem,9vw,6.5rem)]">
+              CODE
             </span>
-            <span className="hero-line block font-[var(--font-serif)] text-[clamp(2rem,7vw,5.1rem)] italic opacity-70 tracking-[0.03em]">
-              IDEAS INTO
+            <span className="hero-line block font-[var(--font-serif)] text-[clamp(1.5rem,5vw,3.8rem)] italic opacity-70 tracking-[0.03em]">
+              TOMORROW&apos;S
             </span>
-            <span className="hero-line block font-[var(--font-serif)] text-[clamp(3rem,10vw,7rem)] italic text-[#16A34A]">
-              REALITY
+            <span className="hero-line block font-[var(--font-serif)] text-[clamp(2.2rem,7.5vw,5.2rem)] italic text-[#16A34A]">
+              TECH
             </span>
           </h1>
-          <p className="hero-line mt-7 w-full max-w-[520px] text-[0.72rem] leading-[1.8] text-white/55">
-            HACKATHONX IS AN INTER-UNIVERSITY TECH STARTUP COMPETITION BY THE
-            IEEE STUDENT BRANCH OF UNNIVERSITY OF X. WE BLEND INNOVATION,
-            ENTREPRENEURSHIP, AND INDUSTRY EXPOSURE TO HELP STUDENT FOUNDERS
-            SHIP BOLD IDEAS INTO REAL-WORLD IMPACT.
+          <p className="hero-line mt-7 w-full max-w-[520px] text-[0.62rem] leading-[1.8] text-white/55">
+            HACKATHONX IS A TECH STARTUP CHALLENGE FOR UNIVERSITIES, ORGANIZED
+            BY THE IEEE STUDENT BRANCH AT UNNIVERSITY OF X. WE COMBINE CREATIVE
+            THINKING, BUSINESS ACUMEN, AND REAL-WORLD CONNECTIONS TO EMPOWER
+            STUDENT ENTREPRENEURS IN LAUNCHING AMBITIOUS PROJECTS WITH TANGIBLE
+            RESULTS.
           </p>
+          <br />
+          <Link href="/#register" className="solid-btn">
+            Register Now
+          </Link>
         </div>
 
         <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-center text-[0.6rem] text-white/55">
           SCROLL DOWN
-          <div className="arrow-bounce mx-auto mt-2 h-4 w-4 rotate-45 border-b-2 border-r-2 border-[#16A34A]" />
+          <div className="arrow-bounce mx-auto mt-2 h-4 w-4 rotate-0 border-b-2 border-r-2 border-[#16A34A]" />
+        </div>
+      </section>
+
+      <section
+        ref={statsRef}
+        className="stats-section relative flex min-h-screen items-center overflow-hidden border-t border-white/5 px-4 py-20 md:px-12 md:py-28"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.88)), url('https://picsum.photos/1920/800?event,stage')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(22,163,74,0.08),transparent_70%)]" />
+
+        <div className="relative mx-auto max-w-[1400px] text-center">
+          <div className="mb-3 text-[0.5rem] tracking-[0.24em] text-[#16A34A]">
+            • OUR LEGACY
+          </div>
+          <h2 className="m-0 leading-none">
+            <span className="font-[var(--font-display)] text-[clamp(1.8rem,4.5vw,3.2rem)]">
+              THE NUMBERS
+            </span>{" "}
+            <span className="font-[var(--font-serif)] text-[clamp(1.6rem,4vw,3rem)] italic text-[#16A34A]">
+              Speak
+            </span>
+          </h2>
+
+          <div className="mt-10 grid grid-cols-2 gap-5 md:mt-12 md:grid-cols-4 md:gap-6">
+            {stats.map((stat, index) => (
+              <div key={stat.label} className="stat-card group">
+                <div className="stat-icon mb-4">
+                  <div className="stat-icon-inner">
+                    {index === 0 && (
+                      <svg
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    )}
+                    {index === 1 && (
+                      <svg
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                        />
+                      </svg>
+                    )}
+                    {index === 2 && (
+                      <svg
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                        />
+                      </svg>
+                    )}
+                    {index === 3 && (
+                      <svg
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <div className="stat-value font-[var(--font-display)] text-[clamp(1.6rem,3.5vw,2.6rem)] leading-none text-white">
+                  {stat.prefix}
+                  {index === 0
+                    ? `${(counters[index] / 1000000).toFixed(1)}M`
+                    : counters[index].toLocaleString()}
+                  {stat.suffix}
+                </div>
+                <div className="stat-label mt-2 text-[0.52rem] tracking-[0.18em] text-white/55">
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -307,38 +478,39 @@ export default function Home() {
               • ABOUT THE COMPETITION
             </div>
             <h2 className="m-0 leading-none">
-              <span className="font-[var(--font-display)] text-[clamp(2.2rem,6vw,4.5rem)]">
+              <span className="font-[var(--font-display)] text-[clamp(1.8rem,4.5vw,3.2rem)]">
                 STARTUP
               </span>{" "}
-              <span className="font-[var(--font-serif)] text-[clamp(2rem,5vw,4rem)] italic">
+              <span className="font-[var(--font-serif)] text-[clamp(1.6rem,4vw,3rem)] italic">
                 Tracks
               </span>
             </h2>
             <p className="mt-6 max-w-[550px] text-[0.74rem] leading-[1.9] text-white/55">
-              HACKATHONX PROVIDES A HIGH-INTENSITY JOURNEY FOR AMBITIOUS
-              BUILDERS. FROM PROBLEM DISCOVERY TO PROTOTYPE VALIDATION, TEAMS
-              NAVIGATE MENTORSHIP SPRINTS, PRODUCT REVIEWS, AND INVESTOR-STYLE
-              EVALUATION.
+              HACKATHONX OFFERS AN INTENSIVE EXPERIENCE FOR DRIVEN INNOVATORS.
+              PARTICIPANTS MOVE THROUGH STAGES FROM IDENTIFYING CHALLENGES TO
+              TESTING PROTOTYPES, ENGAGING IN GUIDED MENTORING, PITCH
+              ASSESSMENTS, AND INVESTOR-GRADE FEEDBACK SESSIONS.
             </p>
           </article>
 
-          <div className="relative min-h-[500px]">
+          <div className="relative min-h-[360px] md:min-h-[500px]">
             <img
               src="https://picsum.photos/520/680?astronaut,child"
               alt="Astronaut child artwork"
-              className="float-art absolute right-[10%] top-[5%] w-[min(360px,70vw)] border border-white/10 object-cover sepia-[0.35] contrast-[1.1] md:right-[10%]"
+              className="float-art mx-auto w-[min(340px,80vw)] border border-white/10 object-cover sepia-[0.35] contrast-[1.1] md:absolute md:right-[10%] md:top-[5%] md:w-[min(360px,70vw)]"
             />
 
             <div className="relative mt-4 border-l border-white/10 pl-3 text-[0.58rem] leading-[1.6] text-white/75 md:absolute md:mt-0 md:w-[min(260px,65vw)] md:border-l-0 md:pl-0 md:left-0 md:top-[18%]">
-              PLATFORMS TRACK: MARKETPLACES, EDTECH, DIGITAL HEALTH, E-COMMERCE,
-              SAAS
+              PLATFORMS TRACK: ONLINE MARKETPLACES, EDUCATIONAL TECHNOLOGY,
+              HEALTHCARE APPS, ONLINE RETAIL, SOFTWARE-AS-A-SERVICE
             </div>
-            <div className="relative mt-4 border-l border-white/10 pl-3 text-[0.58rem] leading-[1.6] text-white/75 md:absolute md:mt-0 md:w-[min(260px,65vw)] md:border-l-0 md:pl-0 md:left-[4%] md:top-[46%]">
-              INTELLIGENCE TRACK: PREDICTIVE HEALTH, GENERATIVE AI, FINTECH
-              ANALYTICS, BIO-INFORMATICS
+            <div className="relative mt-4 border-l border-white/10 pl-3 text-[0.58rem] leading-[1.6] text-white/75 md:absolute md:mt-0 md:w-[min(260px,65vw)] md:border-l-0 md:pl-0 md:left-0 md:top-[46%]">
+              INTELLIGENCE TRACK: HEALTH FORECASTING, AI GENERATION, FINANCIAL
+              INTELLIGENCE, COMPUTATIONAL BIOLOGY
             </div>
-            <div className="relative mt-4 border-l border-white/10 pl-3 text-[0.58rem] leading-[1.6] text-white/75 md:absolute md:mt-0 md:w-[min(260px,65vw)] md:border-l-0 md:pl-0 md:right-0 md:top-[73%] md:text-right">
-              HARDWARE & SECURITY TRACK: EMBEDDED, IOT, CYBER DEFENSE
+            <div className="relative mt-4 border-l border-white/10 pl-3 text-[0.58rem] leading-[1.6] text-white/75 md:absolute md:mt-0 md:w-[min(260px,65vw)] md:border-l-0 md:pl-0 md:left-0 md:top-[73%]">
+              HARDWARE & SECURITY TRACK: EMBEDDED SYSTEMS, INTERNET OF THINGS,
+              CYBERSECURITY SOLUTIONS
             </div>
           </div>
         </div>
@@ -379,10 +551,10 @@ export default function Home() {
       >
         <div className="mb-4 text-[0.66rem] text-[#16A34A]">• OUR JOURNEY</div>
         <h2 className="m-0 leading-none">
-          <span className="font-[var(--font-display)] text-[clamp(2.2rem,6vw,4.5rem)]">
+          <span className="font-[var(--font-display)] text-[clamp(1.8rem,4.5vw,3.2rem)]">
             THE
           </span>{" "}
-          <span className="font-[var(--font-serif)] text-[clamp(2rem,5vw,4rem)] italic">
+          <span className="font-[var(--font-serif)] text-[clamp(1.6rem,4vw,3rem)] italic">
             Journey
           </span>
         </h2>
@@ -426,13 +598,17 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="legacy" data-reveal className={sectionClass}>
+      <section
+        id="legacy"
+        data-reveal
+        className={`${sectionClass} text-center`}
+      >
         <div className="mb-4 text-[0.66rem] text-[#16A34A]">• OUR LEGACY</div>
         <h2 className="m-0 leading-none">
-          <span className="font-[var(--font-display)] text-[clamp(2.2rem,6vw,4.5rem)]">
+          <span className="font-[var(--font-display)] text-[clamp(1.8rem,4.5vw,3.2rem)]">
             PAST
           </span>{" "}
-          <span className="font-[var(--font-serif)] text-[clamp(2rem,5vw,4rem)] italic">
+          <span className="font-[var(--font-serif)] text-[clamp(1.6rem,4vw,3rem)] italic">
             Events
           </span>
         </h2>
@@ -450,10 +626,7 @@ export default function Home() {
             onTouchEnd={endDrag}
           >
             {gallery.map((src, idx) => (
-              <article
-                key={src}
-                className="snap-center border border-white/10 bg-[#0e0e0e]"
-              >
+              <article key={src} className="gallery-card snap-center">
                 <img
                   src={src}
                   alt={`Past event ${idx + 1}`}
@@ -467,7 +640,7 @@ export default function Home() {
             type="button"
             onClick={() => scrollGallery(-1)}
             aria-label="Previous image"
-            className="absolute left-1 top-1/2 z-10 h-10 w-10 -translate-y-1/2 border border-white/10 bg-black/65 text-xl"
+            className="action-btn absolute left-1 top-1/2 z-10 h-10 w-10 -translate-y-1/2 border border-white/10 bg-black/65 text-xl"
           >
             {"<"}
           </button>
@@ -475,7 +648,7 @@ export default function Home() {
             type="button"
             onClick={() => scrollGallery(1)}
             aria-label="Next image"
-            className="absolute right-1 top-1/2 z-10 h-10 w-10 -translate-y-1/2 border border-white/10 bg-black/65 text-xl"
+            className="action-btn absolute right-1 top-1/2 z-10 h-10 w-10 -translate-y-1/2 border border-white/10 bg-black/65 text-xl"
           >
             {">"}
           </button>
@@ -496,7 +669,7 @@ export default function Home() {
                     block: "nearest",
                   });
                 }}
-                className={`h-2 w-2 rounded-full border border-white/10 ${
+                className={`action-btn h-2 w-2 rounded-full border border-white/10 ${
                   activeSlide === idx
                     ? "border-[#16A34A] bg-[#16A34A]"
                     : "bg-transparent"
@@ -510,10 +683,10 @@ export default function Home() {
       <section id="faq" data-reveal className={`${sectionClass} text-center`}>
         <div className="mb-4 text-[0.66rem] text-[#16A34A]">• FAQ</div>
         <h2 className="m-0 leading-none">
-          <span className="font-[var(--font-display)] text-[clamp(2.2rem,6vw,4.5rem)]">
+          <span className="font-[var(--font-display)] text-[clamp(1.8rem,4.5vw,3.2rem)]">
             FREQUENTLY ASKED
           </span>{" "}
-          <span className="font-[var(--font-serif)] text-[clamp(2rem,5vw,4rem)] italic">
+          <span className="font-[var(--font-serif)] text-[clamp(1.6rem,4vw,3rem)] italic">
             Questions
           </span>
         </h2>
@@ -556,28 +729,28 @@ export default function Home() {
       </section>
 
       <section id="contact" data-reveal className={sectionClass}>
-        <div className="mb-4 text-[0.66rem] text-[#16A34A]">
+        <div className="mb-4 text-center text-[0.66rem] text-[#16A34A]">
           • MISSION CONTROL
         </div>
-        <h2 className="m-0 leading-none">
-          <span className="font-[var(--font-display)] text-[clamp(2.2rem,6vw,4.5rem)]">
+        <h2 className="m-0 text-center leading-none">
+          <span className="font-[var(--font-display)] text-[clamp(1.8rem,4.5vw,3.2rem)]">
             CONTACT
           </span>{" "}
-          <span className="font-[var(--font-serif)] text-[clamp(2rem,5vw,4rem)] italic">
+          <span className="font-[var(--font-serif)] text-[clamp(1.6rem,4vw,3rem)] italic">
             Us
           </span>
         </h2>
 
-        <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto mt-7 flex max-w-[1100px] flex-wrap justify-center gap-2.5">
           {contacts.map((person) => (
             <article
               key={person.email}
-              className="border border-white/10 bg-[#111111] p-4 text-center"
+              className="contact-card w-full max-w-[240px] p-5 text-center"
             >
               <img
                 src={person.img}
                 alt={person.name}
-                className="mx-auto mb-3 h-[88px] w-[88px] rounded-full object-cover sepia-[0.35] contrast-[1.1]"
+                className="contact-avatar mx-auto mb-3 h-[84px] w-[84px] rounded-full object-cover sepia-[0.35] contrast-[1.1]"
               />
               <h3 className="m-0 font-[var(--font-display)] text-[1.18rem] leading-none">
                 {person.name}
@@ -592,7 +765,7 @@ export default function Home() {
 
       <footer>
         <section
-          className="grid min-h-[420px] place-items-center px-4 py-12 text-center"
+          className="relative grid min-h-[540px] items-center px-4 pb-8 pt-14 text-center"
           style={{
             backgroundImage:
               "linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.8)), url('https://picsum.photos/1800/1000?rocket,night')",
@@ -600,14 +773,14 @@ export default function Home() {
             backgroundPosition: "center",
           }}
         >
-          <div>
-            <h2 className="m-0 font-[var(--font-display)] text-[clamp(2.3rem,7vw,5rem)] leading-none">
+          <div className="relative z-10">
+            <h2 className="m-0 font-[var(--font-display)] text-[clamp(1.8rem,4.5vw,3.2rem)] leading-none">
               LAUNCH BOLD IDEAS
             </h2>
             <p className="mx-auto mt-3 w-full max-w-[760px] text-[0.72rem] leading-[1.8] text-white/55">
-              WE ARE BUILDING THE NEXT GENERATION OF FOUNDERS, PRODUCTS, AND
-              IMPACT-DRIVEN STARTUPS. JOIN HACKATHONX AND TURN POSSIBILITY INTO
-              MOMENTUM.
+              WE ARE CULTIVATING TOMORROW&apos;S ENTREPRENEURS, INNOVATIONS, AND
+              PURPOSE-DRIVEN VENTURES. BECOME PART OF HACKATHONX AND TRANSFORM
+              POTENTIAL INTO PROGRESS.
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-2">
@@ -615,22 +788,24 @@ export default function Home() {
                 <a
                   key={code}
                   href="#"
-                  className="grid h-9 w-9 place-items-center rounded-full border border-white/10 text-[0.6rem]"
+                  className="action-btn grid h-9 w-9 place-items-center rounded-full border border-white/10 text-[0.6rem]"
                 >
                   {code}
                 </a>
               ))}
             </div>
           </div>
-        </section>
 
-        <div className="flex flex-col items-center justify-between gap-2 border-t border-white/10 px-4 py-4 text-center text-[0.58rem] text-white/55 md:flex-row md:px-6 md:text-left">
-          <div>COPYRIGHT 2026 HACKATHONX. ALL RIGHTS RESERVED.</div>
-          <div>DESIGNED BY IEEE SB UNNIVERSITY OF X</div>
-          <div className="font-[var(--font-display)] text-base text-white">
-            HACKATHON<span className="text-[#16A34A]">X</span>
+          <div className="relative z-10 mt-14 w-full border-t border-white/15 pt-4">
+            <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center justify-between gap-2 text-center text-[0.58rem] text-white/55 md:flex-row md:px-2 md:text-left">
+              <div>COPYRIGHT 2026 HACKATHONX. ALL RIGHTS RESERVED.</div>
+              <div>DESIGNED BY IEEE SB UNNIVERSITY OF X</div>
+              <div className="font-[var(--font-display)] text-base text-white">
+                HACKATHON<span className="text-[#16A34A]">X</span>
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
       </footer>
     </main>
   );
