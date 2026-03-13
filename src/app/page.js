@@ -103,10 +103,10 @@ const gallery = [
 ];
 
 const stats = [
-  { value: 1000000, label: "PRIZEPOOL", suffix: "+", prefix: "" },
-  { value: 26, label: "UNIVERSITIES", suffix: "+", prefix: "" },
-  { value: 550, label: "TEAMS", suffix: "+", prefix: "" },
-  { value: 2400, label: "DELEGATES", suffix: "+", prefix: "" },
+  { value: 1200000, label: "PRIZEPOOL", suffix: "+", prefix: "" },
+  { value: 29, label: "UNIVERSITIES", suffix: "+", prefix: "" },
+  { value: 620, label: "TEAMS", suffix: "+", prefix: "" },
+  { value: 2750, label: "DELEGATES", suffix: "+", prefix: "" },
 ];
 
 export default function Home() {
@@ -115,11 +115,11 @@ export default function Home() {
   const [activeFaq, setActiveFaq] = useState(-1);
   const [activeSlide, setActiveSlide] = useState(0);
   const [counters, setCounters] = useState(stats.map(() => 0));
-  const [hasAnimated, setHasAnimated] = useState(false);
 
   const heroRef = useRef(null);
   const galleryRef = useRef(null);
   const statsRef = useRef(null);
+  const hasAnimatedRef = useRef(false);
   const dragRef = useRef({ isDown: false, startX: 0, startLeft: 0 });
 
   const sectionClass =
@@ -154,8 +154,8 @@ export default function Home() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasAnimated) {
-            setHasAnimated(true);
+          if (entry.isIntersecting && !hasAnimatedRef.current) {
+            hasAnimatedRef.current = true;
             const start = performance.now();
             const duration = 2000;
 
@@ -183,7 +183,7 @@ export default function Home() {
       cancelAnimationFrame(raf);
       observer.disconnect();
     };
-  }, [hasAnimated]);
+  }, []);
 
   const updateSlide = useMemo(
     () => () => {
