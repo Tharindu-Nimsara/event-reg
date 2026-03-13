@@ -64,37 +64,42 @@ const contacts = [
     role: "EVENT CHAIR",
     phone: "+94 77 111 2222",
     email: "tharindu@hackathonx.lk",
-    img: "https://picsum.photos/140/140?person,1",
+    img: "/images/head-shot1.jpg",
   },
   {
     name: "AMAYA PERERA",
     role: "OPERATIONS LEAD",
     phone: "+94 77 333 4444",
     email: "amaya@hackathonx.lk",
-    img: "https://picsum.photos/140/140?person,2",
+    img: "/images/head-shot2.webp",
   },
   {
     name: "HESHAN SILVA",
     role: "TECH LEAD",
     phone: "+94 77 555 6666",
     email: "heshan@hackathonx.lk",
-    img: "https://picsum.photos/140/140?person,3",
+    img: "/images/head-shot3.jpg",
   },
   {
     name: "NETHMI FERNANDO",
     role: "PARTNERSHIP LEAD",
     phone: "+94 77 777 8888",
     email: "nethmi@hackathonx.lk",
-    img: "https://picsum.photos/140/140?person,4",
+    img: "/images/head-shot4.jpg",
   },
 ];
 
 const gallery = [
-  "https://picsum.photos/700/500?1,event",
-  "https://picsum.photos/700/500?2,event",
-  "https://picsum.photos/700/500?3,event",
-  "https://picsum.photos/700/500?4,event",
-  "https://picsum.photos/700/500?5,event",
+  "https://images.pexels.com/photos/2774556/pexels-photo-2774556.jpeg",
+  "https://images.pexels.com/photos/8345975/pexels-photo-8345975.jpeg",
+  "https://images.pexels.com/photos/2774566/pexels-photo-2774566.jpeg",
+  "https://images.pexels.com/photos/15470542/pexels-photo-15470542.jpeg",
+  "https://images.pexels.com/photos/15448073/pexels-photo-15448073.jpeg",
+  "https://images.pexels.com/photos/20044375/pexels-photo-20044375.jpeg",
+  "https://images.pexels.com/photos/28683719/pexels-photo-28683719.jpeg",
+  "https://images.pexels.com/photos/6805146/pexels-photo-6805146.jpeg",
+  // "https://images.pexels.com/photos/18999471/pexels-photo-18999471.jpeg",
+  // "https://images.pexels.com/photos/4940642/pexels-photo-4940642.jpeg",
 ];
 
 const stats = [
@@ -126,15 +131,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (!heroRef.current) return;
-      heroRef.current.style.backgroundPosition = `center calc(50% + ${window.scrollY * 0.25}px)`;
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
     const observed = document.querySelectorAll(
       "[data-reveal], [data-timeline]",
     );
@@ -153,36 +149,29 @@ export default function Home() {
 
   useEffect(() => {
     if (!statsRef.current) return;
+    let raf;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasAnimated) {
             setHasAnimated(true);
-            stats.forEach((stat, index) => {
-              const duration = 2000;
-              const steps = 60;
-              const increment = stat.value / steps;
-              let current = 0;
+            const start = performance.now();
+            const duration = 2000;
 
-              const timer = setInterval(() => {
-                current += increment;
-                if (current >= stat.value) {
-                  setCounters((prev) => {
-                    const newCounters = [...prev];
-                    newCounters[index] = stat.value;
-                    return newCounters;
-                  });
-                  clearInterval(timer);
-                } else {
-                  setCounters((prev) => {
-                    const newCounters = [...prev];
-                    newCounters[index] = Math.floor(current);
-                    return newCounters;
-                  });
-                }
-              }, duration / steps);
-            });
+            const tick = (now) => {
+              const elapsed = now - start;
+              const progress = Math.min(elapsed / duration, 1);
+              const eased = 1 - (1 - progress) ** 3;
+              setCounters(stats.map((stat) => Math.floor(stat.value * eased)));
+              if (progress < 1) {
+                raf = requestAnimationFrame(tick);
+              } else {
+                setCounters(stats.map((stat) => stat.value));
+              }
+            };
+
+            raf = requestAnimationFrame(tick);
           }
         });
       },
@@ -190,7 +179,10 @@ export default function Home() {
     );
 
     observer.observe(statsRef.current);
-    return () => observer.disconnect();
+    return () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+    };
   }, [hasAnimated]);
 
   const updateSlide = useMemo(
@@ -221,6 +213,7 @@ export default function Home() {
 
   const beginDrag = (pageX) => {
     if (!galleryRef.current) return;
+    galleryRef.current.style.scrollBehavior = "auto";
     dragRef.current = {
       isDown: true,
       startX: pageX,
@@ -230,12 +223,15 @@ export default function Home() {
 
   const moveDrag = (pageX) => {
     if (!galleryRef.current || !dragRef.current.isDown) return;
-    const walk = (pageX - dragRef.current.startX) * 1.3;
+    const walk = pageX - dragRef.current.startX;
     galleryRef.current.scrollLeft = dragRef.current.startLeft - walk;
   };
 
   const endDrag = () => {
     dragRef.current.isDown = false;
+    if (galleryRef.current) {
+      galleryRef.current.style.scrollBehavior = "smooth";
+    }
   };
 
   const beginTouchDrag = (touches) => {
@@ -260,8 +256,8 @@ export default function Home() {
         </div>
       </div>
 
-      <header className="fixed inset-x-0 top-0 z-50 px-3 py-3 md:px-8 md:py-4">
-        <nav className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-md border border-white/10 bg-black/45 px-3 py-2 backdrop-blur-sm md:grid-cols-[auto_1fr_auto] md:gap-4 md:px-4">
+      <header className="fixed inset-x-0 top-0 z-50 px-4 py-3 md:px-6 md:py-4">
+        <nav className="mx-auto grid w-full max-w-[1120px] grid-cols-[1fr_auto] items-center gap-3 rounded-md border border-white/10 bg-black/45 px-3 py-2 backdrop-blur-sm md:grid-cols-[auto_1fr_auto] md:gap-4 md:px-4">
           <a
             href="#top"
             className="font-[var(--font-display)] text-[1.45rem] tracking-[0.09em] md:text-2xl"
@@ -308,7 +304,9 @@ export default function Home() {
               DELEGATE BOOKLET
             </a>
             <a
-              href="#contact"
+              href="https://docs.google.com/forms/d/e/1FAIpQLSdeTa69Vn1pt0C1IRaBFOkEVkGmnGAms6laVyiL1uu20omPVA/viewform?usp=publish-editor"
+              target="_blank"
+              rel="noopener noreferrer"
               className="action-btn bg-[#16A34A] px-4 py-2 text-[0.62rem] font-bold tracking-[0.12em] md:text-[0.64rem]"
             >
               REGISTER NOW
@@ -323,13 +321,12 @@ export default function Home() {
         className="home-hero relative flex min-h-screen items-end px-4 pb-16 pt-28 md:px-12 md:pb-20"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(0,0,0,0.64), rgba(0,0,0,0.78)), url('hero-bg.jpg'), url('https://picsum.photos/1920/1080?grayscale&blur=1')",
+            "linear-gradient(rgba(0,0,0,0.64), rgba(0,0,0,0.78)), url('hero-bg.jpg'), url('https://images.pexels.com/photos/8721318/pexels-photo-8721318.jpeg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          backgroundAttachment: "fixed",
         }}
       >
-        <div className="w-full max-w-[700px]">
+        <div className="ml-2 w-full max-w-[700px] md:ml-8">
           <div className="hero-line mb-3 text-[0.65rem] text-[#16A34A]">
             • HACKATHONX - 2026
           </div>
@@ -337,10 +334,10 @@ export default function Home() {
             <span className="hero-line block font-[var(--font-display)] text-[clamp(2.4rem,9vw,6.5rem)]">
               CODE
             </span>
-            <span className="hero-line block font-[var(--font-serif)] text-[clamp(1.5rem,5vw,3.8rem)] italic opacity-70 tracking-[0.03em]">
+            <span className="hero-line -ml-[0.09em] block font-[var(--font-serif)] text-[clamp(1.5rem,5vw,3.8rem)] italic opacity-70 tracking-[0.03em]">
               TOMORROW&apos;S
             </span>
-            <span className="hero-line block font-[var(--font-serif)] text-[clamp(2.2rem,7.5vw,5.2rem)] italic text-[#16A34A]">
+            <span className="hero-line -ml-[0.15em] block font-[var(--font-serif)] text-[clamp(2.2rem,7.5vw,5.2rem)] italic text-[#16A34A]">
               TECH
             </span>
           </h1>
@@ -352,7 +349,12 @@ export default function Home() {
             RESULTS.
           </p>
           <br />
-          <Link href="/#register" className="solid-btn">
+          <Link
+            href="https://docs.google.com/forms/d/e/1FAIpQLSdeTa69Vn1pt0C1IRaBFOkEVkGmnGAms6laVyiL1uu20omPVA/viewform?usp=publish-editor"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="solid-btn"
+          >
             Register Now
           </Link>
         </div>
@@ -368,7 +370,7 @@ export default function Home() {
         className="stats-section relative flex min-h-screen items-center overflow-hidden border-t border-white/5 px-4 py-20 md:px-12 md:py-28"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.88)), url('https://picsum.photos/1920/800?event,stage')",
+            "linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.88)), url('https://images.pexels.com/photos/1366957/pexels-photo-1366957.jpeg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -493,11 +495,14 @@ export default function Home() {
             </p>
           </article>
 
-          <div className="relative min-h-[360px] md:min-h-[500px]">
+          <div className="relative min-h-[360px] md:min-h-[540px]">
             <img
-              src="https://picsum.photos/520/680?astronaut,child"
+              src="https://images.pexels.com/photos/7170771/pexels-photo-7170771.jpeg"
               alt="Astronaut child artwork"
-              className="float-art mx-auto w-[min(340px,80vw)] border border-white/10 object-cover sepia-[0.35] contrast-[1.1] md:absolute md:right-[10%] md:top-[5%] md:w-[min(360px,70vw)]"
+              loading="lazy"
+              decoding="async"
+              fetchPriority="low"
+              className="float-art mx-auto w-[min(340px,80vw)] border border-white/10 object-cover md:absolute md:right-[10%] md:top-[5%] md:w-[min(360px,70vw)]"
             />
 
             <div className="relative mt-4 border-l border-white/10 pl-3 text-[0.58rem] leading-[1.6] text-white/75 md:absolute md:mt-0 md:w-[min(260px,65vw)] md:border-l-0 md:pl-0 md:left-0 md:top-[18%]">
@@ -520,13 +525,16 @@ export default function Home() {
         data-reveal
         className="section-reveal grid border-t border-white/5 md:grid-cols-[65%_35%]"
       >
-        <article className="relative min-h-[460px]">
+        <article className="relative min-h-[460px] p-3">
           <img
-            src="https://picsum.photos/1200/800?event,stage"
+            src="https://images.pexels.com/photos/4940642/pexels-photo-4940642.jpeg"
             alt="Past event video thumbnail"
-            className="h-full w-full object-cover"
+            loading="lazy"
+            decoding="async"
+            fetchPriority="low"
+            className="h-full w-full border border-white/20 object-cover"
           />
-          <div className="absolute inset-0 bg-black/45" />
+          <div className="absolute inset-3 bg-black/45" />
           <button
             type="button"
             aria-label="Play event video"
@@ -535,12 +543,16 @@ export default function Home() {
             <span className="ml-1 block h-0 w-0 border-b-[12px] border-l-[19px] border-t-[12px] border-b-transparent border-l-white border-t-transparent" />
           </button>
         </article>
-        <article className="min-h-[460px]">
+        <article className="relative min-h-[460px] p-3">
           <img
-            src="https://picsum.photos/900/800?astronaut,plane"
+            src="https://images.pexels.com/photos/19012046/pexels-photo-19012046.jpeg"
             alt="Atmospheric close up"
-            className="h-full w-full object-cover"
+            loading="lazy"
+            decoding="async"
+            fetchPriority="low"
+            className="h-full w-full border border-white/20 object-cover"
           />
+          <div className="absolute inset-3 bg-[linear-gradient(to_top,rgba(0,0,0,0.7),transparent)]" />
         </article>
       </section>
 
@@ -616,7 +628,7 @@ export default function Home() {
         <div className="relative mt-8">
           <div
             ref={galleryRef}
-            className="grid auto-cols-[minmax(220px,72vw)] grid-flow-col gap-4 overflow-x-auto scroll-smooth [scrollbar-width:none] md:auto-cols-[minmax(260px,28vw)]"
+            className="gallery-track grid auto-cols-[minmax(220px,72vw)] grid-flow-col gap-4 overflow-x-auto scroll-smooth md:auto-cols-[minmax(260px,28vw)]"
             onMouseDown={(e) => beginDrag(e.pageX)}
             onMouseMove={(e) => moveDrag(e.pageX)}
             onMouseLeave={endDrag}
@@ -630,7 +642,10 @@ export default function Home() {
                 <img
                   src={src}
                   alt={`Past event ${idx + 1}`}
-                  className="h-[280px] w-full object-cover sepia-[0.4] contrast-[1.1]"
+                  loading="lazy"
+                  decoding="async"
+                  fetchPriority="low"
+                  className="h-[280px] w-full object-cover"
                 />
               </article>
             ))}
@@ -745,19 +760,34 @@ export default function Home() {
           {contacts.map((person) => (
             <article
               key={person.email}
-              className="contact-card w-full max-w-[240px] p-5 text-center"
+              className="contact-card flex w-full max-w-[240px] flex-col items-center justify-between p-6 text-center"
             >
-              <img
-                src={person.img}
-                alt={person.name}
-                className="contact-avatar mx-auto mb-3 h-[84px] w-[84px] rounded-full object-cover sepia-[0.35] contrast-[1.1]"
-              />
-              <h3 className="m-0 font-[var(--font-display)] text-[1.18rem] leading-none">
-                {person.name}
-              </h3>
-              <p className="my-1 text-[0.6rem] text-white/55">{person.role}</p>
-              <p className="my-1 text-[0.6rem] text-white/55">{person.phone}</p>
-              <p className="my-1 text-[0.6rem] text-white/55">{person.email}</p>
+              <div className="flex flex-col items-center">
+                <img
+                  src={person.img}
+                  alt={person.name}
+                  width={100}
+                  height={100}
+                  loading="lazy"
+                  decoding="async"
+                  fetchPriority="low"
+                  className="contact-avatar mx-auto mb-4 h-[100px] w-[100px] rounded-full object-cover"
+                />
+                <h3 className="m-0 font-[var(--font-display)] text-[1.18rem] leading-none">
+                  {person.name}
+                </h3>
+                <p className="mt-1 text-[0.6rem] text-white/55">
+                  {person.role}
+                </p>
+              </div>
+              <div className="mt-4 w-full border-t border-white/10 pt-4">
+                <p className="my-1 text-[0.6rem] text-white/55">
+                  {person.phone}
+                </p>
+                <p className="my-1 text-[0.6rem] text-white/55">
+                  {person.email}
+                </p>
+              </div>
             </article>
           ))}
         </div>
@@ -765,15 +795,14 @@ export default function Home() {
 
       <footer>
         <section
-          className="relative grid min-h-[540px] items-center px-4 pb-8 pt-14 text-center"
+          className="relative grid min-h-[700px] items-center px-4 pb-8 pt-14 text-center"
           style={{
-            backgroundImage:
-              "linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.8)), url('https://picsum.photos/1800/1000?rocket,night')",
+            backgroundImage: " url('/footer-img.svg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
-          <div className="relative z-10">
+          <div className="relative z-10 mt-12 md:mt-16">
             <h2 className="m-0 font-[var(--font-display)] text-[clamp(1.8rem,4.5vw,3.2rem)] leading-none">
               LAUNCH BOLD IDEAS
             </h2>
@@ -784,19 +813,113 @@ export default function Home() {
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-2">
-              {["EM", "FB", "IG", "WA", "IN", "YT", "TT"].map((code) => (
-                <a
-                  key={code}
-                  href="#"
-                  className="action-btn grid h-9 w-9 place-items-center rounded-full border border-white/10 text-[0.6rem]"
+              <a
+                href="#"
+                aria-label="Email"
+                className="action-btn grid h-9 w-9 place-items-center rounded-full border border-white/10 text-white"
+              >
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
                 >
-                  {code}
-                </a>
-              ))}
+                  <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                </svg>
+              </a>
+              <a
+                href="#"
+                aria-label="Facebook"
+                className="action-btn grid h-9 w-9 place-items-center rounded-full border border-white/10 text-white"
+              >
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                </svg>
+              </a>
+              <a
+                href="#"
+                aria-label="Instagram"
+                className="action-btn grid h-9 w-9 place-items-center rounded-full border border-white/10 text-white"
+              >
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="2" y="2" width="20" height="20" rx="5" />
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                </svg>
+              </a>
+              <a
+                href="#"
+                aria-label="WhatsApp"
+                className="action-btn grid h-9 w-9 place-items-center rounded-full border border-white/10 text-white"
+              >
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+              </a>
+              <a
+                href="#"
+                aria-label="LinkedIn"
+                className="action-btn grid h-9 w-9 place-items-center rounded-full border border-white/10 text-white"
+              >
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z" />
+                  <rect x="2" y="9" width="4" height="12" />
+                  <circle cx="4" cy="4" r="2" />
+                </svg>
+              </a>
+              <a
+                href="#"
+                aria-label="YouTube"
+                className="action-btn grid h-9 w-9 place-items-center rounded-full border border-white/10 text-white"
+              >
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.95C18.88 4 12 4 12 4s-6.88 0-8.59.47a2.78 2.78 0 0 0-1.95 1.95A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" />
+                  <polygon
+                    points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"
+                    fill="black"
+                  />
+                </svg>
+              </a>
+              <a
+                href="#"
+                aria-label="TikTok"
+                className="action-btn grid h-9 w-9 place-items-center rounded-full border border-white/10 text-white"
+              >
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.2 8.2 0 0 0 4.79 1.54V6.78a4.85 4.85 0 0 1-1.02-.09z" />
+                </svg>
+              </a>
             </div>
           </div>
 
-          <div className="relative z-10 mt-14 w-full border-t border-white/15 pt-4">
+          <div className="relative z-10 mt-24 w-full border-t border-white/15 pt-4 md:mt-92">
             <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center justify-between gap-2 text-center text-[0.58rem] text-white/55 md:flex-row md:px-2 md:text-left">
               <div>COPYRIGHT 2026 HACKATHONX. ALL RIGHTS RESERVED.</div>
               <div>DESIGNED BY IEEE SB UNNIVERSITY OF X</div>

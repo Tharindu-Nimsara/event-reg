@@ -28,8 +28,8 @@ const rulesData = [
       "Teams must consist of 3-5 members, all from the same university.",
       "Each individual may register in only one team.",
       "All members must provide their NIC number.",
-      "IIT members should provide their IIT student number.",
-      "Finalists of past CodeSprint editions cannot take part in CodeSprint 11.",
+      "All student members should provide their university student number.",
+      "Finalists of past editions cannot take part in this edition.",
     ],
   },
   {

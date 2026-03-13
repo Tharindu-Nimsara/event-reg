@@ -30,6 +30,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
+        suppressHydrationWarning
         className={`${displayFont.variable} ${serifFont.variable} ${bodyFont.variable} bg-black text-white antialiased`}
       >
         {children}

@@ -79,7 +79,8 @@ const DelegateBook = () => {
               <span>CORE RESOURCE PACK</span>
             </div>
             <a
-              href="#"
+              href="/delegate-book/DELEGATE-BOOK.pdf"
+              download
               className="rounded-sm border border-[#16A34A]/50 bg-[#16A34A]/15 px-4 py-2 text-[0.56rem] tracking-[0.18em] text-[#84f8ae] transition hover:bg-[#16A34A]/25"
             >
               DOWNLOAD
@@ -87,10 +88,10 @@ const DelegateBook = () => {
           </div>
 
           <article className="rounded-sm border border-white/10 bg-black/70 p-3 md:p-4">
-            <img
-              src="https://picsum.photos/1200/740?technology,event"
-              alt="HackathonX delegate booklet preview"
-              className="h-auto w-full rounded-sm border border-[#16A34A]/25 object-cover"
+            <iframe
+              src="/delegate-book/DELEGATE-BOOK.pdf#toolbar=0&view=FitH"
+              title="HackathonX delegate booklet"
+              className="h-[70vh] min-h-[420px] w-full rounded-sm border border-[#16A34A]/25 bg-black"
             />
           </article>
         </section>
